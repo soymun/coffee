@@ -53,6 +53,18 @@ class InMemoryMachineTest {
     }
 
     @Test
+    public void testMakeLatte(){
+        coffeeMachine.make(CoffeeType.LATTE);
+        assertThat(statusMachine.getStatus()).isEqualTo(Status.READY);
+    }
+
+    @Test
+    public void testMakeESPRESSO(){
+        coffeeMachine.make(CoffeeType.ESPRESSO);
+        assertThat(statusMachine.getStatus()).isEqualTo(Status.READY);
+    }
+
+    @Test
     public void testStatus() throws InterruptedException {
         CompletableFuture.runAsync(() -> coffeeMachine.make(CoffeeType.CAPPUCCINO));
         Thread.sleep(200);
