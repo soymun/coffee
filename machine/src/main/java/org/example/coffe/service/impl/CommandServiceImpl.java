@@ -21,8 +21,8 @@ public class CommandServiceImpl implements CommandService {
     private final CommandMapper commandMapper;
     @Override
     @Transactional
-    public List<CommandDto> getAllByPage(Integer pageNumber, Integer pageSize) {
+    public List<CommandDto> getAllByPage() {
         log.info("Get all commands by size");
-        return commandRepository.findAll(PageRequest.of(pageNumber, pageSize)).getContent().stream().map(commandMapper::commandToCommandDto).toList();
+        return commandRepository.findAll().stream().map(commandMapper::commandToCommandDto).toList();
     }
 }

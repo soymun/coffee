@@ -12,5 +12,5 @@ public interface CommandService {
      * @param pageSize размер страницы
      * @return List<CommandDto>
      */
-    List<CommandDto> getAllByPage(Integer pageNumber, Integer pageSize);
+    List<CommandDto> getAllByPage();
 }

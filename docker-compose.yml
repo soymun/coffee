@@ -17,7 +17,7 @@ services:
   coffee:
     image: coffee:1.0.1
     build:
-      context: .
+      context: ./machine/
       dockerfile: Dockerfile
     depends_on:
       - postgres_db
@@ -29,4 +29,19 @@ services:
       - SPRING_DATASOURCE_PASSWORD=qwerty
     ports:
       - "8080:8080"
+    restart: unless-stopped
+
+  vaadin:
+    image: vaadin:1.0.1
+    build:
+      context: ./demo/
+      dockerfile: Dockerfile
+    depends_on:
+      - coffee
+    expose:
+      - 8081
+    environment:
+      - COFFEE_URL=coffee:8080
+    ports:
+      - "8081:8081"
     restart: unless-stopped

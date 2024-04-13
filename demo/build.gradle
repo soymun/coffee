@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.4'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.vaadin' version '24.3.9'
+}
+
+group = 'org.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('vaadinVersion', "24.3.9")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-integration'
+    implementation 'com.vaadin:vaadin-spring-boot-starter'
+    implementation 'org.springframework.integration:spring-integration-http:6.2.3'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.integration:spring-integration-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.vaadin:vaadin-bom:${vaadinVersion}"
+    }
+}
+
+vaadin {
+    productionMode = true
+    pnpmEnable = true
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

@@ -41,7 +41,7 @@ public class CommandController {
                     )
             }
     )
-    public ResponseEntity<ResultModel<List<CommandDto>>> getInfo(@RequestParam Integer pageSize, @RequestParam Integer pageNumber){
-        return ResponseEntity.ok(new ResultModel<>(commandService.getAllByPage(pageNumber, pageSize)));
+    public ResponseEntity<ResultModel<List<CommandDto>>> getInfo(){
+        return ResponseEntity.ok(new ResultModel<>(commandService.getAllByPage()));
     }
 }
