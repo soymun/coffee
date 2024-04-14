@@ -14,7 +14,6 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.Transformers;
 import org.springframework.integration.http.dsl.Http;
-import org.springframework.integration.http.outbound.HttpRequestExecutingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
@@ -32,7 +31,9 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow fetchCommandMapFlow() {
         return IntegrationFlow.from(requestChannelCommand())
-                .handle(fetchCommandsGateway())
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/command")
+                        .expectedResponseType(String.class)
+                        .httpMethod(HttpMethod.GET))
                 .transform(Transformers.fromJson(CommandListDto.class))
                 .handle(message -> {
                     infoContext.setData(((CommandListDto) message.getPayload()).getData());
@@ -43,7 +44,7 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow sendCreateCoffee() {
         return IntegrationFlow.from(requestChannelMakeCoffee())
-                .handle(Http.outboundGateway("http://"+url+"/api/v1/coffee/make?coffeeType={type}")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/make?coffeeType={type}")
                         .expectedResponseType(String.class)
                         .httpMethod(HttpMethod.POST)
                         .uriVariable("type", Message::getPayload))
@@ -53,7 +54,7 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow sendCleanCoffee() {
         return IntegrationFlow.from(requestChannelCleanCoffee())
-                .handle(Http.outboundGateway("http://"+url+"/api/v1/coffee/clean")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/clean")
                         .expectedResponseType(String.class)
                         .httpMethod(HttpMethod.POST))
                 .handle(message -> {
@@ -64,7 +65,7 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow sendStopCoffee() {
         return IntegrationFlow.from(requestChannelStopCoffee())
-                .handle(Http.outboundGateway("http://"+url+"/api/v1/coffee/stop")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/stop")
                         .expectedResponseType(String.class)
                         .httpMethod(HttpMethod.POST))
                 .handle(message -> {
@@ -75,7 +76,7 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow sendRestartCoffee() {
         return IntegrationFlow.from(requestChannelRestartCoffee())
-                .handle(Http.outboundGateway("http://"+url+"/api/v1/coffee/restart")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/restart")
                         .expectedResponseType(String.class)
                         .httpMethod(HttpMethod.POST))
                 .handle(message -> {
@@ -86,7 +87,9 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow fetchCommandsFlow() {
         return IntegrationFlow.from(requestChannelDictionary())
-                .handle(fetchCommandMapGateway())
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/dc-command")
+                        .expectedResponseType(String.class)
+                        .httpMethod(HttpMethod.GET))
                 .transform(Transformers.fromJson(DcCommandListDto.class))
                 .handle(object -> {
                     infoContext.setDictionary(((DcCommandListDto) object.getPayload()).getData().stream().collect(Collectors.toMap(DcCommandDto::getId, DcCommandDto::getName)));
@@ -97,7 +100,9 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow fetchInfoMachine() {
         return IntegrationFlow.from(requestChannelInfo())
-                .handle(sendGetInfo())
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/info/info")
+                        .expectedResponseType(String.class)
+                        .httpMethod(HttpMethod.GET))
                 .transform(Transformers.fromJson(InfoCoffee.class))
                 .handle(object -> {
                     infoContext.setInfoCoffee(((InfoCoffee) object.getPayload()));
@@ -108,7 +113,9 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow fetchStatusMachine() {
         return IntegrationFlow.from(requestChannelStatus())
-                .handle(sendGetStatus())
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/info/status")
+                        .expectedResponseType(String.class)
+                        .httpMethod(HttpMethod.GET))
                 .handle(object -> {
                     infoContext.setStatus((String) object.getPayload());
                 })
@@ -153,37 +160,5 @@ public class IntegrationConfig {
     @Bean
     public MessageChannel requestChannelStatus() {
         return new DirectChannel();
-    }
-
-    @Bean
-    public HttpRequestExecutingMessageHandler fetchCommandMapGateway() {
-        HttpRequestExecutingMessageHandler gateway = new HttpRequestExecutingMessageHandler("http://"+url+"/api/v1/dc-command");
-        gateway.setHttpMethod(HttpMethod.GET);
-        gateway.setExpectedResponseType(String.class);
-        return gateway;
-    }
-
-    @Bean
-    public HttpRequestExecutingMessageHandler sendGetInfo() {
-        HttpRequestExecutingMessageHandler gateway = new HttpRequestExecutingMessageHandler("http://"+url+"/api/v1/info/info");
-        gateway.setHttpMethod(HttpMethod.GET);
-        gateway.setExpectedResponseType(String.class);
-        return gateway;
-    }
-
-    @Bean
-    public HttpRequestExecutingMessageHandler sendGetStatus() {
-        HttpRequestExecutingMessageHandler gateway = new HttpRequestExecutingMessageHandler("http://"+url+"/api/v1/info/status");
-        gateway.setHttpMethod(HttpMethod.GET);
-        gateway.setExpectedResponseType(String.class);
-        return gateway;
-    }
-
-    @Bean
-    public HttpRequestExecutingMessageHandler fetchCommandsGateway() {
-        HttpRequestExecutingMessageHandler gateway = new HttpRequestExecutingMessageHandler("http://"+url+"/api/v1/command");
-        gateway.setHttpMethod(HttpMethod.GET);
-        gateway.setExpectedResponseType(String.class);
-        return gateway;
     }
 }

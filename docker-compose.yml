@@ -34,7 +34,7 @@ services:
   vaadin:
     image: vaadin:1.0.1
     build:
-      context: ./demo/
+      context: ./vaadin/
       dockerfile: Dockerfile
     depends_on:
       - coffee
