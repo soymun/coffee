@@ -1,11 +1,17 @@
-package com.example.demo.models;
+package org.example.coffe.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
+import org.example.coffe.entities.CoffeeLog;
 
 import java.time.LocalDateTime;
 
 @Data
+@Schema(name="Info command", description="Command info")
 public class CommandDto {
 
     @JsonProperty(value = "id")
@@ -25,4 +31,5 @@ public class CommandDto {
 
     @JsonProperty(value = "coffeeLog")
     private CoffeeLogDto coffeeLog;
+
 }

@@ -6,6 +6,7 @@ import com.example.demo.models.DcCommandDto;
 import com.example.demo.models.Void;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,18 +24,20 @@ public class HistoryView extends VerticalLayout {
         grid.addColumn(obj -> dictionary.get((long) obj.getCommandId())).setHeader("Команда");
         grid.addColumn(object -> object.getTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))).setHeader("Дата");
         grid.addColumn(CommandDto::getMessage).setHeader("Сообщение");
+        grid.addColumn(CommandDto::getMachine).setHeader("Кофе машина");
         grid.addColumn(this::getCoffeeLogName).setHeader("Тип кофе");
 
         grid.setHeightFull();
 
         grid.removeColumnByKey("id");
+        grid.removeColumnByKey("machine");
         grid.removeColumnByKey("message");
         grid.removeColumnByKey("commandId");
         grid.removeColumnByKey("time");
         grid.removeColumnByKey("coffeeLog");
 
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
-        grid.setItems(coffeeGateway.getCommand(new Void()).getData());
+        grid.setDataProvider(new ListDataProvider<>(coffeeGateway.getCommand(new Void()).getData()));
 
         setHeightFull();
         add(grid);

@@ -17,18 +17,54 @@ services:
   coffee:
     image: coffee:1.0.1
     build:
-      context: ./machine/
+      context: ./back/
       dockerfile: Dockerfile
     depends_on:
       - postgres_db
     expose:
       - 8080
+      - 9090
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=qwerty
     ports:
       - "8080:8080"
+      - "9090:9090"
+    restart: unless-stopped
+
+  machine1:
+    image: machine:1.0.1
+    build:
+      context: ./machine/
+      dockerfile: Dockerfile
+    depends_on:
+      - coffee
+    expose:
+      - 9000
+      - 9090
+    environment:
+      - SERVER_PORT=9000
+      - BACK_HOST=coffee
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  machine2:
+    image: machine:1.0.1
+    build:
+      context: ./machine/
+      dockerfile: Dockerfile
+    depends_on:
+      - coffee
+    expose:
+      - 9001
+      - 9090
+    environment:
+      - SERVER_PORT=9001
+      - BACK_HOST=coffee
+    ports:
+      - "9001:9001"
     restart: unless-stopped
 
   vaadin:

@@ -1,11 +1,10 @@
 server:
-  port: 8080
+  port: -1
 
 spring:
   config:
     import: settings.yaml
-  datasource:
-    username: postgres
-    password: qwerty
-    url: jdbc:postgresql://localhost:5432/postgres
-    driver-class-name: org.postgresql.Driver
+
+back:
+  host: localhost
+  port: 9090

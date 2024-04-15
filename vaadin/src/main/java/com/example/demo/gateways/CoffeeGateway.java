@@ -1,8 +1,6 @@
 package com.example.demo.gateways;
 
-import com.example.demo.models.CommandListDto;
-import com.example.demo.models.DcCommandListDto;
-import com.example.demo.models.InfoCoffee;
+import com.example.demo.models.*;
 import com.example.demo.models.Void;
 import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
@@ -18,18 +16,21 @@ public interface CoffeeGateway {
     @Gateway(requestChannel = "requestDcCommand", replyChannel = "responseDcCommand")
     DcCommandListDto getDcCommand(Void v);
 
+    @Gateway(requestChannel = "requestMachine", replyChannel = "responseMachine")
+    MachineDataList getMachines(Void v);
+
     @Gateway(requestChannel = "requestChannelCleanCoffee")
-    void cleanCoffee(Void v);
+    void cleanCoffee(String machine);
 
     @Gateway(requestChannel = "requestChannelStopCoffee")
-    void stopCoffee(Void v);
+    void stopCoffee(String machine);
 
     @Gateway(requestChannel = "requestChannelRestartCoffee")
-    void restartCoffee(Void v);
+    void restartCoffee(String machine);
 
     @Gateway(requestChannel = "requestInfo", replyChannel = "responseInfo")
-    InfoCoffee getInfo(Void v);
+    InfoCoffee getInfo(String machine);
 
     @Gateway(requestChannel = "requestStatus", replyChannel = "responseStatus")
-    String getStatus(Void v);
+    String getStatus(String machine);
 }
