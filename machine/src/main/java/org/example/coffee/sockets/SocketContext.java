@@ -75,8 +75,8 @@ public class SocketContext implements InitializingBean {
         if (values != -1) {
             switch (values) {
                 case 0 -> lockAndStatus();
-                case 1 -> resources(socket.getInputStream().read());
-                case 2 -> make(socket.getInputStream().read());
+                case 1 -> resources(socket.getInputStream().read(), socket.getInputStream().read(), socket.getInputStream().read(), socket.getInputStream().read());
+                case 2 -> make(socket.getInputStream().read(), socket.getInputStream().read(), socket.getInputStream().read(), socket.getInputStream().read());
                 case 3 -> {
                     socket.getOutputStream().write((byte) statusMachine.getStatus().ordinal());
                     socket.getOutputStream().flush();
@@ -112,16 +112,18 @@ public class SocketContext implements InitializingBean {
         socket.getOutputStream().flush();
     }
 
-    private void resources(int value) throws IOException {
+    private void resources(int value,int count, int milkByte, int sugar) throws IOException {
+        boolean milk = milkByte != 0;
         CoffeeRecipe coffeeType = coffeeTypes.get(CoffeeType.getType(value));
-        socket.getOutputStream().write(convertBoolean(info.isEnoughFor(coffeeType)));
+        socket.getOutputStream().write(convertBoolean(info.isEnoughFor(coffeeType, milk, count, sugar)));
         socket.getOutputStream().flush();
     }
 
-    private void make(int value) throws IOException {
+    private void make(int value,int count, int milkByte, int sugar) throws IOException {
         try {
-            info.allocate(coffeeTypes.get(CoffeeType.getType(value)));
-            machine.make(CoffeeType.getType(value));
+            boolean milk = milkByte != 0;
+            info.allocate(coffeeTypes.get(CoffeeType.getType(value)), milk, count, sugar);
+            machine.make(CoffeeType.getType(value), milk, count, sugar);
             socket.getOutputStream().write(convertBoolean(true));
             socket.getOutputStream().flush();
         } catch (Exception e) {

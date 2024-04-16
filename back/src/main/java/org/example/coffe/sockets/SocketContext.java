@@ -36,23 +36,15 @@ public class SocketContext extends AbstractVerticle {
         log.info("Client with id connect {}", socket.writeHandlerID());
         Buffer bufferSocket = Buffer.buffer();
         socket.handler(bufferSocket::appendBuffer);
-        context.put("Coffee machine " + atomicInteger.getAndIncrement(), new SocketInfo(socket, 0, bufferSocket));
+        String name = "Coffee machine " + atomicInteger.getAndIncrement();
+        context.put(name, new SocketInfo(socket, 0, bufferSocket));
         socket.closeHandler((var) -> {
-            String name = null;
-            for (Map.Entry<String, SocketInfo> entry : context.entrySet()) {
-                if (entry.getValue().getNetSocket().remoteAddress().host().equals(socket.remoteAddress().host()) && entry.getValue().getNetSocket().remoteAddress().port() == socket.remoteAddress().port()) {
-                    name = entry.getKey();
-                    break;
-                }
-            }
-            if (name != null) {
-                context.remove(name);
-            }
+            context.remove(name);
         });
-
+        socket.endHandler((var) -> context.remove(name));
     }
 
-    public boolean makeCoffee(String type) {
+    public boolean makeCoffee(String type, int count, boolean milk, int sugar) {
         try {
             for (SocketInfo info : context.values()) {
                 info.getNetSocket().write(Buffer.buffer(new byte[]{0}));
@@ -61,11 +53,11 @@ public class SocketContext extends AbstractVerticle {
                 if (!lock) {
                     continue;
                 }
-                info.getNetSocket().write(Buffer.buffer(new byte[]{1, (byte) CoffeeType.valueOf(type).ordinal()}));
+                info.getNetSocket().write(Buffer.buffer(new byte[]{1, (byte) CoffeeType.valueOf(type).ordinal(), (byte) count, convertBoolean(milk), (byte) sugar}));
                 Thread.sleep(200);
                 boolean resources = getBoolean(info);
                 if (resources) {
-                    info.getNetSocket().write(Buffer.buffer(new byte[]{2, (byte) CoffeeType.valueOf(type).ordinal()}));
+                    info.getNetSocket().write(Buffer.buffer(new byte[]{2, (byte) CoffeeType.valueOf(type).ordinal(), (byte) count, convertBoolean(milk), (byte) sugar}));
                     Thread.sleep(700);
                     boolean response = getBoolean(info);
                     if (response) {
@@ -128,5 +120,13 @@ public class SocketContext extends AbstractVerticle {
         byte[] values = socketInfo.getBuffer().getBytes(socketInfo.getBias(), socketInfo.getBias() + 16);
         socketInfo.setBias(socketInfo.getBias() + 16);
         return new InfoCoffee(values);
+    }
+
+    private byte convertBoolean(boolean result) {
+        if (result) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

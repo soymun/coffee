@@ -3,6 +3,8 @@ package org.example.coffee.coffeeMachine.info;
 
 import org.example.coffee.model.typeCoffe.CoffeeRecipe;
 
+import java.io.IOException;
+
 public interface Info {
 
     /**
@@ -33,18 +35,23 @@ public interface Info {
      * Уменьщение ингредиентов
      * @param coffeeRecipe тип кофе
      */
-    void allocate(CoffeeRecipe coffeeRecipe);
+    void allocate(CoffeeRecipe coffeeRecipe, boolean milk, int count, int sugar);
 
     /**
      * Проверить на доступность выполнения
      * @param coffeeRecipe тип кофе
      * @return Можно ли выполнить задачу
      */
-    boolean isEnoughFor(CoffeeRecipe coffeeRecipe);
+    boolean isEnoughFor(CoffeeRecipe coffeeRecipe, boolean milk, int count, int sugar);
 
     /**
      * Получить информацию об ингредиентах
      * @return ингредиенты
      */
     InfoCoffee getInfo();
+
+    /**
+     * Сохранить настройки в файл
+     */
+    void saveSettings() throws IOException;
 }

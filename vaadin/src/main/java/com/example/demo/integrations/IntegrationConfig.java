@@ -1,9 +1,6 @@
 package com.example.demo.integrations;
 
-import com.example.demo.models.CommandListDto;
-import com.example.demo.models.DcCommandListDto;
-import com.example.demo.models.InfoCoffee;
-import com.example.demo.models.MachineDataList;
+import com.example.demo.models.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +30,13 @@ public class IntegrationConfig {
     @Bean
     public IntegrationFlow sendCreateCoffee() {
         return IntegrationFlow.from("requestChannelMakeCoffee")
-                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/make?coffeeType={type}")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/make?coffeeType={type}&sugar={sugar}&milk={milk}&portion={portion}")
                         .expectedResponseType(String.class)
                         .httpMethod(HttpMethod.POST)
-                        .uriVariable("type", Message::getPayload))
+                        .uriVariable("type", "payload.type")
+                        .uriVariable("milk", "payload.milk")
+                        .uriVariable("sugar", "payload.sugar")
+                        .uriVariable("portion", "payload.portion"))
                 .get();
     }
 

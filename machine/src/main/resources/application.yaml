@@ -1,10 +1,27 @@
 server:
   port: -1
 
-spring:
-  config:
-    import: settings.yaml
-
 back:
   host: localhost
   port: 9090
+
+espresso:
+  time-to-make: 500
+  water: 250
+  beans: 16
+
+latte:
+  time-to-make: 500
+  water: 350
+  milk: 75
+  beans: 20
+
+cappuccino:
+  time-to-make: 500
+  water: 200
+  milk: 100
+  beans: 12
+
+machine:
+  clean: 500
+  restart: 500

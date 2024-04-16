@@ -11,7 +11,7 @@ public interface CoffeeMachine {
      * Производство кофе
      * @param coffeeType тип кофе
      */
-    void make(CoffeeType coffeeType);
+    void make(CoffeeType coffeeType, boolean milk, int count, int sugar);
 
     /**
      * Очиста кофе машины

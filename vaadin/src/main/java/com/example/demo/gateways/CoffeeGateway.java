@@ -8,7 +8,7 @@ import org.springframework.integration.annotation.MessagingGateway;
 @MessagingGateway
 public interface CoffeeGateway {
     @Gateway(requestChannel = "requestChannelMakeCoffee")
-    void makeCoffee(String coffeeType);
+    void makeCoffee(CreateCoffeeDto coffeeType);
 
     @Gateway(requestChannel = "requestCommand", replyChannel = "responseCommand")
     CommandListDto getCommand(Void v);

@@ -43,8 +43,8 @@ public class ControlController {
             }
     )
     @PostMapping(value = "/make", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResultModel<Status>> makeCoffee(@RequestParam CoffeeType coffeeType) {
-        machineService.make(coffeeType);
+    public ResponseEntity<ResultModel<Status>> makeCoffee(@RequestParam CoffeeType coffeeType, @RequestParam(defaultValue = "1") Integer count, @RequestParam(defaultValue = "true") boolean milk, @RequestParam(defaultValue = "0") Integer sugar) {
+        machineService.make(coffeeType, count, milk, sugar);
         return ResponseEntity.ok(new ResultModel<>(Status.READY));
     }
 

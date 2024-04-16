@@ -22,9 +22,9 @@ public class MachineServiceImpl implements MachineService {
     private final LogService logService;
 
     @Override
-    public void make(CoffeeType coffeeType) {
+    public void make(CoffeeType coffeeType, Integer count, boolean milk, Integer sugar) {
         try {
-            if (socketContext.makeCoffee(coffeeType.toString())) {
+            if (socketContext.makeCoffee(coffeeType.toString(), count, milk, sugar)) {
                 logService.logWithCoffee(1, "OK", coffeeType);
             } else {
                 throw new ResourcesExceptions("Невозможно создать кофе");

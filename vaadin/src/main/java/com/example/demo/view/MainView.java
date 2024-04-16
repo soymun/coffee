@@ -1,10 +1,12 @@
 package com.example.demo.view;
 
 import com.example.demo.gateways.CoffeeGateway;
+import com.example.demo.models.CreateCoffeeDto;
 import com.example.demo.models.InfoCoffee;
 import com.example.demo.models.Void;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -21,6 +23,8 @@ import java.util.List;
 public class MainView extends VerticalLayout {
 
     private final List<String> coffeeType = List.of("ESPRESSO", "LATTE", "CAPPUCCINO");
+
+    private final List<Integer> intValue = List.of(1, 2, 3);
 
     public MainView(@Autowired CoffeeGateway coffeeGateway) {
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -63,11 +67,16 @@ public class MainView extends VerticalLayout {
 
     private void createCoffeeLayout(CoffeeGateway coffeeGateway) {
         ComboBox<String> comboBox = new ComboBox<>("Тип кофе");
+        Checkbox milk = new Checkbox("Молоко");
+        ComboBox<Integer> sugar = new ComboBox<>("Сахар");
+        ComboBox<Integer> portion = new ComboBox<>("Порция");
+        sugar.setItems(intValue);
+        portion.setItems(intValue);
         comboBox.setItems(coffeeType);
         Button createCoffeeButton = new Button("Приготовить");
         createCoffeeButton.addClickListener(buttonClickEvent -> {
             try {
-                coffeeGateway.makeCoffee(comboBox.getValue());
+                coffeeGateway.makeCoffee(new CreateCoffeeDto(comboBox.getValue(), milk.getValue(), portion.getValue(), sugar.getValue()));
             } catch (Exception e) {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("Ошибка");
@@ -75,7 +84,7 @@ public class MainView extends VerticalLayout {
                 dialog.open();
             }
         });
-        HorizontalLayout createCoffeeLayout = new HorizontalLayout(comboBox, createCoffeeButton);
+        HorizontalLayout createCoffeeLayout = new HorizontalLayout(comboBox, milk, sugar, portion, createCoffeeButton);
         createCoffeeLayout.setAlignItems(Alignment.CENTER);
         createCoffeeLayout.setVerticalComponentAlignment(Alignment.END, comboBox, createCoffeeButton);
         add(createCoffeeLayout);

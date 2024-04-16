@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,15 +41,16 @@ public class InMemoryCoffeeMachine implements CoffeeMachine {
     private final Info info;
 
     @Override
-    public void make(CoffeeType coffeeType) {
+    public void make(CoffeeType coffeeType, boolean milk, int count, int sugar) {
         try {
             lock.lock();
             if (!stop) {
 
                 log.debug("Make {}", coffeeType);
 
-                if(info.isEnoughFor(coffeeTypes.get(coffeeType))) {
-                    info.allocate(coffeeTypes.get(coffeeType));
+                if (info.isEnoughFor(coffeeTypes.get(coffeeType), milk, count, sugar)) {
+                    info.allocate(coffeeTypes.get(coffeeType), milk, count, sugar);
+                    info.saveSettings();
                     statusMachine.setStatus(Status.MAKE);
                     Thread.sleep(coffeeTypes.get(coffeeType).getTimeToMake());
                     statusMachine.setStatus(Status.READY);
@@ -61,7 +63,7 @@ public class InMemoryCoffeeMachine implements CoffeeMachine {
             } else {
                 throw new ResourcesExceptions("Off");
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         } finally {
             lock.unlock();
@@ -111,7 +113,7 @@ public class InMemoryCoffeeMachine implements CoffeeMachine {
     public boolean stop() {
         try {
             lock.lock();
-            if(!stop) {
+            if (!stop) {
                 log.debug("Stop");
 
                 stop = true;
@@ -128,7 +130,7 @@ public class InMemoryCoffeeMachine implements CoffeeMachine {
     public boolean start() {
         try {
             lock.lock();
-            if(stop) {
+            if (stop) {
                 stop = false;
                 Thread.sleep(100);
                 statusMachine.setStatus(Status.READY);
