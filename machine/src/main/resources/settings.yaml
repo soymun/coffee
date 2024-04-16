@@ -1,8 +1,8 @@
 coffee-machine:
-  water: 650
-  milk: 540
-  beans: 120
-  cups: 9
+  water: 10000
+  milk: 10000
+  beans: 10000
+  cups: 10
 
 espresso:
   time-to-make: 500

@@ -5,5 +5,9 @@ public enum Status {
     READY,
     MAKE,
     CLEAN,
-    STOP
+    STOP;
+
+    public static Status getEnum(byte index){
+        return Status.values()[index];
+    }
 }

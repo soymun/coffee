@@ -5,6 +5,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 import lombok.extern.slf4j.Slf4j;
+import org.example.coffe.model.CoffeeType;
+import org.example.coffe.model.InfoCoffee;
+import org.example.coffe.model.Status;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -52,20 +55,19 @@ public class SocketContext extends AbstractVerticle {
     public boolean makeCoffee(String type) {
         try {
             for (SocketInfo info : context.values()) {
-                info.getNetSocket().write("type:check-lock\n");
+                info.getNetSocket().write(Buffer.buffer(new byte[]{0}));
                 Thread.sleep(200);
-                boolean lock = Boolean.parseBoolean(getInfo(info));
+                boolean lock = getBoolean(info);
                 if (!lock) {
                     continue;
                 }
-
-                info.getNetSocket().write("type:check-resources,coffee:" + type + "\n");
+                info.getNetSocket().write(Buffer.buffer(new byte[]{1, (byte) CoffeeType.valueOf(type).ordinal()}));
                 Thread.sleep(200);
-                boolean resources = Boolean.parseBoolean(getInfo(info));
+                boolean resources = getBoolean(info);
                 if (resources) {
-                    info.getNetSocket().write("type:create-coffee,coffee:" + type + "\n");
+                    info.getNetSocket().write(Buffer.buffer(new byte[]{2, (byte) CoffeeType.valueOf(type).ordinal()}));
                     Thread.sleep(700);
-                    boolean response = Boolean.parseBoolean(getInfo(info));
+                    boolean response = getBoolean(info);
                     if (response) {
                         return true;
                     }
@@ -78,56 +80,53 @@ public class SocketContext extends AbstractVerticle {
         return false;
     }
 
-    public String clean(String machine) {
-        context.get(machine).getNetSocket().write("type:clean\n");
-        try {
-            Thread.sleep(600);
-            String info = getInfo(context.get(machine));
-            return info.split(":")[1];
-        } catch (Exception ignore) {
-
-        }
-        return "Ok";
+    public boolean clean(String machine) throws InterruptedException {
+        context.get(machine).getNetSocket().write(Buffer.buffer(new byte[]{4}));
+        Thread.sleep(200);
+        return getBoolean(context.get(machine));
     }
 
-    public void stop(String machine){
-        context.get(machine).getNetSocket().write("type:stop\n");
+    public void stop(String machine) throws InterruptedException {
+        context.get(machine).getNetSocket().write(Buffer.buffer(new byte[]{5}));
+        Thread.sleep(200);
     }
 
-    public void restart(String machine) {
-        context.get(machine).getNetSocket().write("type:restart\n");
+    public void restart(String machine) throws InterruptedException {
+        context.get(machine).getNetSocket().write(Buffer.buffer(new byte[]{6}));
+        Thread.sleep(200);
     }
 
-    public String status(String machine) throws InterruptedException {
-        context.get(machine).getNetSocket().write("type:status\n");
+    public Status status(String machine) throws InterruptedException {
+        context.get(machine).getNetSocket().write(Buffer.buffer(new byte[]{3}));
         Thread.sleep(300);
-        return getInfo(context.get(machine));
+        return Status.getEnum(getEnum(context.get(machine)));
     }
 
-    public String info(String machine) throws InterruptedException {
-        context.get(machine).getNetSocket().write("type:info\n");
+    public InfoCoffee info(String machine) throws InterruptedException {
+        context.get(machine).getNetSocket().write(Buffer.buffer(new byte[]{7}));
         Thread.sleep(300);
-        return getInfo(context.get(machine));
+        return getInfoCoffee(context.get(machine));
     }
 
     public List<String> getCoffeeMachines() {
         return context.keySet().stream().toList();
     }
 
-    private String getInfo(SocketInfo socketInfo) {
-        StringBuilder infoLength = new StringBuilder();
-        String value = "";
-        int start = socketInfo.getBias();
-        int end = socketInfo.getBias() + 1;
-        while (!(value = socketInfo.getBuffer().getString(start, end)).equals("|")) {
-            infoLength.append(value);
-            start = end;
-            end += 1;
-        }
-        start = end;
-        int length = Integer.parseInt(infoLength.toString());
-        String result = socketInfo.getBuffer().getString(start, start + length);
-        socketInfo.setBias(start + length);
-        return result.trim();
+    private boolean getBoolean(SocketInfo socketInfo) {
+        byte value = socketInfo.getBuffer().getByte(socketInfo.getBias());
+        socketInfo.setBias(socketInfo.getBias() + 1);
+        return value != 0;
+    }
+
+    private byte getEnum(SocketInfo socketInfo) {
+        byte value = socketInfo.getBuffer().getByte(socketInfo.getBias());
+        socketInfo.setBias(socketInfo.getBias() + 1);
+        return value;
+    }
+
+    private InfoCoffee getInfoCoffee(SocketInfo socketInfo) {
+        byte[] values = socketInfo.getBuffer().getBytes(socketInfo.getBias(), socketInfo.getBias() + 16);
+        socketInfo.setBias(socketInfo.getBias() + 16);
+        return new InfoCoffee(values);
     }
 }

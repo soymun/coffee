@@ -42,10 +42,9 @@ public class MachineServiceImpl implements MachineService {
     @Override
     public void clean(String machine) {
         try {
-            String status = socketContext.clean(machine);
-            if (status.equals("Ok")) {
+            if (socketContext.clean(machine)) {
                 logService.log(2, "OK", machine);
-            } else if (status.equals("Off")) {
+            } else {
                 throw new ResourcesExceptions("Кофе машина отключена");
             }
         } catch (ResourcesExceptions e) {
@@ -53,7 +52,6 @@ public class MachineServiceImpl implements MachineService {
             throw e;
         } catch (Exception e) {
             logService.log(2, "ERROR", machine);
-            throw e;
         }
     }
 
@@ -64,7 +62,6 @@ public class MachineServiceImpl implements MachineService {
             logService.log(3, "OK", machine);
         } catch (Exception e) {
             logService.log(3, "ERROR", machine);
-            throw e;
         }
     }
 
@@ -75,7 +72,6 @@ public class MachineServiceImpl implements MachineService {
             logService.log(4, "OK", machine);
         } catch (Exception e) {
             logService.log(4, "ERROR", machine);
-            throw e;
         }
     }
 

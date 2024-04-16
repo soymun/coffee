@@ -3,7 +3,6 @@ package org.example.coffee.sockets;
 import lombok.extern.slf4j.Slf4j;
 import org.example.coffee.coffeeMachine.coffee.CoffeeMachine;
 import org.example.coffee.coffeeMachine.info.Info;
-import org.example.coffee.coffeeMachine.info.InfoCoffee;
 import org.example.coffee.coffeeMachine.status.Status;
 import org.example.coffee.coffeeMachine.status.StatusMachine;
 import org.example.coffee.model.typeCoffe.CoffeeRecipe;
@@ -13,16 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -33,8 +28,6 @@ public class SocketContext implements InitializingBean {
 
     @Value("${back.port}")
     private Integer port;
-
-    private BufferedReader bufferedReader;
 
     private final Socket socket = new Socket();
 
@@ -57,17 +50,13 @@ public class SocketContext implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         socket.connect(new InetSocketAddress(host, port));
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         CompletableFuture.runAsync(this::work);
     }
 
     public void work() {
         while (true) {
             try {
-                processMessage(Arrays.stream(bufferedReader.readLine().split(",")).map(string -> {
-                    String[] value = string.split(":");
-                    return new Pair(value[0], value[1]);
-                }).collect(Collectors.toMap(Pair::var1, Pair::var2)));
+                processMessage(socket.getInputStream().read());
             } catch (SocketException e) {
                 while (!socket.isConnected()) {
                     try {
@@ -82,25 +71,28 @@ public class SocketContext implements InitializingBean {
         }
     }
 
-    private void processMessage(Map<String, String> values) throws IOException {
-        if (values.containsKey("type")) {
-            switch (values.get("type")) {
-                case "check-lock" -> lockAndStatus();
-                case "check-resources" -> resources(values);
-                case "create-coffee" -> make(values);
-                case "status" ->
-                        socket.getOutputStream().write(convertString(statusMachine.getStatus().toString()).getBytes());
-                case "clean" -> {
+    private void processMessage(int values) throws IOException {
+        if (values != -1) {
+            switch (values) {
+                case 0 -> lockAndStatus();
+                case 1 -> resources(socket.getInputStream().read());
+                case 2 -> make(socket.getInputStream().read());
+                case 3 -> {
+                    socket.getOutputStream().write((byte) statusMachine.getStatus().ordinal());
+                    socket.getOutputStream().flush();
+                }
+                case 4 -> {
                     try {
                         machine.clean();
                     } catch (Exception e) {
-                        socket.getOutputStream().write(convertString("errors:" + e.getMessage()).getBytes());
+                        socket.getOutputStream().write(convertBoolean(false));
                     }
                 }
-                case "stop" -> machine.stop();
-                case "restart" -> machine.restart();
-                case "info" -> info();
+                case 5 -> machine.stop();
+                case 6 -> machine.restart();
+                case 7 -> info();
             }
+
         }
     }
 
@@ -116,53 +108,38 @@ public class SocketContext implements InitializingBean {
         if (statusMachine.getStatus().equals(Status.STOP)) {
             result = false;
         }
-        socket.getOutputStream().write(convertBoolean(result).getBytes());
+        socket.getOutputStream().write(convertBoolean(result));
         socket.getOutputStream().flush();
     }
 
-    private void resources(Map<String, String> values) throws IOException {
-        String coffee = values.getOrDefault("coffee", "");
-        CoffeeRecipe coffeeType = coffeeTypes.get(CoffeeType.valueOf(coffee));
-        socket.getOutputStream().write(convertBoolean(info.isEnoughFor(coffeeType)).getBytes());
+    private void resources(int value) throws IOException {
+        CoffeeRecipe coffeeType = coffeeTypes.get(CoffeeType.getType(value));
+        socket.getOutputStream().write(convertBoolean(info.isEnoughFor(coffeeType)));
         socket.getOutputStream().flush();
     }
 
-    private void make(Map<String, String> values) throws IOException {
-        String coffee = values.getOrDefault("coffee", "");
+    private void make(int value) throws IOException {
         try {
-            info.allocate(coffeeTypes.get(CoffeeType.valueOf(coffee)));
-            machine.make(CoffeeType.valueOf(coffee));
-            socket.getOutputStream().write(convertBoolean(true).getBytes());
+            info.allocate(coffeeTypes.get(CoffeeType.getType(value)));
+            machine.make(CoffeeType.getType(value));
+            socket.getOutputStream().write(convertBoolean(true));
             socket.getOutputStream().flush();
         } catch (Exception e) {
-            socket.getOutputStream().write((convertString("errors:" + e.getMessage())).getBytes());
+            socket.getOutputStream().write(convertBoolean(false));
             socket.getOutputStream().flush();
         }
     }
 
     private void info() throws IOException {
-        InfoCoffee infoCoffee = info.getInfo();
-        String value = "cups:" + infoCoffee.getCups() +
-                ",water:" + infoCoffee.getWater() +
-                ",milk:" + infoCoffee.getMilk() +
-                ",bean:" + infoCoffee.getBean();
-        socket.getOutputStream().write(convertString(value).getBytes());
+        socket.getOutputStream().write(info.getInfo().serialize());
         socket.getOutputStream().flush();
     }
 
-    public String convertBoolean(boolean result) {
+    public byte convertBoolean(boolean result) {
         if (result) {
-            return "4|true";
+            return 1;
         } else {
-            return "5|false";
+            return 0;
         }
-    }
-
-    public String convertString(String value) {
-        return value.length() + "|" + value;
-    }
-
-
-    record Pair(String var1, String var2) {
     }
 }
