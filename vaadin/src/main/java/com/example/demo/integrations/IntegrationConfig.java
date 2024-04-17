@@ -41,6 +41,16 @@ public class IntegrationConfig {
     }
 
     @Bean
+    public IntegrationFlow sendReport() {
+        return IntegrationFlow.from("requestReport")
+                .handle(Http.outboundGateway("http://" + url + "/api/v1/report/txt")
+                        .expectedResponseType(byte[].class)
+                        .httpMethod(HttpMethod.POST))
+                .channel("responseReport")
+                .get();
+    }
+
+    @Bean
     public IntegrationFlow sendCleanCoffee() {
         return IntegrationFlow.from("requestChannelCleanCoffee")
                 .handle(Http.outboundGateway("http://" + url + "/api/v1/coffee/clean?machine={machine}")

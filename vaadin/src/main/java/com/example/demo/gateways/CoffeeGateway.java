@@ -33,4 +33,7 @@ public interface CoffeeGateway {
 
     @Gateway(requestChannel = "requestStatus", replyChannel = "responseStatus")
     String getStatus(String machine);
+
+    @Gateway(requestChannel = "requestReport", replyChannel = "responseReport")
+    byte[] getReport(Void v);
 }
