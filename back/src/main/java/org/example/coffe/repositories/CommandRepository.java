@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface CommandRepository extends JpaRepository<Command, Long> {
 
-    @Query(value = "select new org.example.coffe.model.CommandReport(c.id, c.message, coalesce(c.machine, ''), dc.name, to_char(c.time, 'HH:mm dd.MM.yyyy'), coalesce(cl.coffeeType, '')) from Command c left join DcCommand dc on c.commandId = dc.id left join CoffeeLog cl on cl.commandId = c.id")
+    @Query(value = "select new org.example.coffe.model.CommandReport(c.id, c.message, coalesce(c.machine, ''), dc.name, to_char(c.time, 'dd.MM.yyyy HH24:MI'), coalesce(cl.coffeeType, '')) from Command c left join DcCommand dc on c.commandId = dc.id left join CoffeeLog cl on cl.commandId = c.id")
     List<CommandReport> getCommandReport();
 }
