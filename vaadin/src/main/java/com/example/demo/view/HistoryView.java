@@ -10,12 +10,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
@@ -50,10 +48,13 @@ public class HistoryView extends VerticalLayout {
                     ui.access(() -> {
                         Dialog dialog = new Dialog();
                         Anchor anchor = new Anchor();
-                        anchor.setText("Скачать отчёт");
+                        dialog.add(new Text("Отчёт скачен"));
                         anchor.setHref(generateReportResource(file, fileName));
+                        anchor.setVisible(false);
                         dialog.add(anchor);
                         dialog.open();
+                        ui.getPage().open(anchor.getHref(), "_blank");
+
                     });
                 } catch (Exception ignore) {
 
@@ -99,7 +100,7 @@ public class HistoryView extends VerticalLayout {
         }
     }
 
-    private StreamResource generateReportResource(byte[] file, String fileName) {
-        return new StreamResource(fileName, () -> new ByteArrayInputStream(file));
+    private com.vaadin.flow.server.StreamResource generateReportResource(byte[] file, String fileName) {
+        return new com.vaadin.flow.server.StreamResource(fileName, () -> new ByteArrayInputStream(file));
     }
 }
