@@ -17,7 +17,7 @@ public class CommandReport {
 
     private String command;
 
-    private LocalDateTime time;
+    private String time;
 
     private String coffeeLog;
 }
