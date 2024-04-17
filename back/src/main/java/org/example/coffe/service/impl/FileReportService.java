@@ -1,5 +1,6 @@
 package org.example.coffe.service.impl;
 
+import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import net.sf.jooreports.templates.DocumentTemplateException;
 import org.example.coffe.mappers.CommandMapper;
@@ -13,6 +14,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,7 @@ public class FileReportService implements ReportService {
     private final CommandMapper commandMapper;
 
     @Override
-    public Resource historyReports() throws DocumentTemplateException, IOException, InterruptedException {
+    public Resource historyReports() throws DocumentTemplateException, IOException, InterruptedException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         return new FileSystemResource(textReports.generate(commandRepository.getCommandReport()));
     }
 }

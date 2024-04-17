@@ -32,6 +32,7 @@ dependencies {
     implementation("io.vertx:vertx-core:4.5.7")
     implementation("net.sf.jodreports:jodreports:2.4.0")
     implementation("xerces:xercesImpl:2.9.1")
+    implementation("io.minio:minio:8.5.9")
     implementation("com.artofsolving:jodconverter:2.2.1")
     implementation("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")

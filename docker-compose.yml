@@ -1,5 +1,9 @@
 version: '1.0'
 
+networks:
+  minio_network:
+
+
 services:
   postgres_db:
     image: postgres:15-alpine
@@ -41,13 +45,13 @@ services:
     depends_on:
       - coffee
     expose:
-      - 9000
+      - 9002
       - 9090
     environment:
-      - SERVER_PORT=9000
+      - SERVER_PORT=9002
       - BACK_HOST=coffee
     ports:
-      - "9000:9000"
+      - "9002:9002"
     restart: unless-stopped
 
   machine2:
@@ -66,6 +70,40 @@ services:
     ports:
       - "9001:9001"
     restart: unless-stopped
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    volumes:
+      - "/minio:/data"
+    ports:
+      - "9000:9000"
+      - "37207:37207"
+    networks:
+      - minio_network
+    restart: always
+    environment:
+      MINIO_ROOT_USER: "usercoffeemachine"
+      MINIO_ROOT_PASSWORD: "usercoffeemachine"
+    command: server /data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio-console:
+    container_name: minio-console
+    restart: always
+    image: minio/console:latest
+    ports:
+      - "9091:9090"
+    networks:
+      - minio_network
+    command: server
+    environment:
+      - CONSOLE_MINIO_SERVER=http://minio:9000
+    depends_on:
+      - minio
 
   vaadin:
     image: vaadin:1.0.1
