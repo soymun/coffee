@@ -31,14 +31,17 @@ public class HistoryView extends VerticalLayout {
 
     public HistoryView(@Autowired CoffeeGateway coffeeGateway) {
         Button button = new Button("Сгенерировать отчёт");
+        Dialog dialogDownload = new Dialog();
         progressBar.setWidth("15em");
         progressBar.setIndeterminate(true);
-        progressBar.setVisible(false);
-        Text text = new Text("");
+        progressBar.setVisible(true);
+        Text text = new Text("Ожидайте загрузки");
+        dialogDownload.add(text, progressBar);
+        add(dialogDownload);
         button.addClickListener(buttonClickEvent -> {
             UI ui = UI.getCurrent();
-            progressBar.setVisible(true);
-            text.setText("Ожидайте загрузки");
+            dialogDownload.open();
+
             CompletableFuture<String> execute = new CompletableFuture<>();
             execute.completeAsync(() -> {
                 try {
@@ -59,10 +62,7 @@ public class HistoryView extends VerticalLayout {
             });
 
             execute.whenCompleteAsync((a, b) -> {
-                ui.access(() -> {
-                    progressBar.setVisible(false);
-                    text.setText("");
-                });
+                ui.access(dialogDownload::close);
             });
 
         });
@@ -88,9 +88,7 @@ public class HistoryView extends VerticalLayout {
         grid.setDataProvider(new ListDataProvider<>(coffeeGateway.getCommand(new Void()).getData()));
 
         setHeightFull();
-        HorizontalLayout horizontalLayout = new HorizontalLayout(button, text, progressBar);
-        horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, button, progressBar);
-        add(horizontalLayout, grid);
+        add(button, grid);
     }
 
     private String getCoffeeLogName(CommandDto object) {
