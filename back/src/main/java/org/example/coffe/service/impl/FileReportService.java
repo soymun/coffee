@@ -25,7 +25,7 @@ public class FileReportService implements ReportService {
     private final CommandMapper commandMapper;
 
     @Override
-    public Resource historyReports() throws DocumentTemplateException, IOException {
+    public Resource historyReports() throws DocumentTemplateException, IOException, InterruptedException {
         return new FileSystemResource(textReports.generate(commandRepository.getCommandReport()));
     }
 }

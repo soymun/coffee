@@ -8,5 +8,5 @@ import java.io.IOException;
 
 public interface ReportService {
 
-    Resource historyReports() throws DocumentTemplateException, IOException;
+    Resource historyReports() throws DocumentTemplateException, IOException, InterruptedException;
 }

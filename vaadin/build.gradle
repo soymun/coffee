@@ -30,6 +30,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'com.vaadin:vaadin-spring-boot-starter'
     implementation 'org.springframework.integration:spring-integration-http:6.2.3'
+    compileOnly 'com.vaadin:vaadin-icons:3.0.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

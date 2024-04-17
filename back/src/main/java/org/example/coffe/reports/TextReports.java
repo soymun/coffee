@@ -15,12 +15,13 @@ import java.util.Map;
 @Component
 public class TextReports {
 
-    public File generate(List<CommandReport> value) throws IOException, DocumentTemplateException {
+    public File generate(List<CommandReport> value) throws IOException, DocumentTemplateException, InterruptedException {
         DocumentTemplateFactory documentTemplateFactory = new DocumentTemplateFactory();
         DocumentTemplate template = documentTemplateFactory.getTemplate(TextReports.class.getResourceAsStream("/SimpleTemplate.odt"));
         Map<String, Object> dataModel = Map.of("items", value);
         File output = File.createTempFile("report", ".odt");
         template.createDocument(dataModel, new FileOutputStream(output));
+        Thread.sleep(10000);
         return output;
     }
 

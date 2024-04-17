@@ -18,7 +18,7 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping("/txt")
-    public Resource getReport() throws DocumentTemplateException, IOException {
+    public Resource getReport() throws DocumentTemplateException, IOException, InterruptedException {
         return reportService.historyReports();
     }
 }
