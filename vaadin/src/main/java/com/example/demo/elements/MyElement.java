@@ -24,7 +24,7 @@ public class MyElement extends VerticalLayout {
     }
 
     @ClientCallable
-    public void getCurrentStatus(String ignore) {
+    public void getCurrentStatus() {
         if (coffeeGateway != null) {
             if (comboBox.getValue() != null) {
                 getUI().get().access(() -> {
