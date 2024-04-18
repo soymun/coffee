@@ -1,5 +1,6 @@
 package com.example.demo.view;
 
+import com.example.demo.elements.MyElement;
 import com.example.demo.gateways.CoffeeGateway;
 import com.example.demo.models.CreateCoffeeDto;
 import com.example.demo.models.InfoCoffee;
@@ -8,6 +9,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Image;
@@ -20,18 +22,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Route(value = "/main", layout = HeaderView.class)
+@JsModule(value = "./src/main-view-timer.js")
 public class MainView extends VerticalLayout {
 
     private final List<String> coffeeType = List.of("ESPRESSO", "LATTE", "CAPPUCCINO");
 
     private final List<Integer> intValue = List.of(1, 2, 3);
 
+    private ComboBox<String> machine;
+
+    private Text status;
+
     public MainView(@Autowired CoffeeGateway coffeeGateway) {
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
 
-        ComboBox<String> machines = new ComboBox<>();
-        machines.setItems(coffeeGateway.getMachines(new Void()).getData());
+        machine = new ComboBox<>();
+        machine.setItems(coffeeGateway.getMachines(new Void()).getData());
 
         Image image = new Image("https://home-appliances.philips/cdn/shop/files/5400_42fd3476-fc80-4787-a7bd-4b66beade3ea.jpg?v=1695302330", "Not found");
         image.setHeight("600px");
@@ -41,7 +48,7 @@ public class MainView extends VerticalLayout {
             dialog.setHeaderTitle("Информация");
 
             Grid<InfoCoffee> grid = new Grid<>(InfoCoffee.class);
-            grid.setDataProvider(new ListDataProvider<>(List.of(coffeeGateway.getInfo(machines.getValue()))));
+            grid.setDataProvider(new ListDataProvider<>(List.of(coffeeGateway.getInfo(machine.getValue()))));
             grid.addColumn(InfoCoffee::getBean).setHeader("Кофе");
             grid.addColumn(InfoCoffee::getWater).setHeader("Вода");
             grid.addColumn(InfoCoffee::getMilk).setHeader("Молоко");
@@ -55,14 +62,15 @@ public class MainView extends VerticalLayout {
 
             dialog.setHeight("30%");
             dialog.setWidth("30%");
-            Text text = new Text("Статус - " + coffeeGateway.getStatus(machines.getValue()));
-            dialog.add(grid, text);
+            status = new Text("Статус - " + coffeeGateway.getStatus(machine.getValue()));
+            dialog.add(grid, status);
             dialog.open();
         });
-        add(machines);
+        MyElement myElement = new MyElement(machine, coffeeGateway);
+        add(machine, myElement);
         add(image);
         createCoffeeLayout(coffeeGateway);
-        createButtons(coffeeGateway, machines);
+        createButtons(coffeeGateway, machine);
     }
 
     private void createCoffeeLayout(CoffeeGateway coffeeGateway) {
